@@ -14,10 +14,12 @@ public class GameManager : MonoBehaviour
     public string playerTag;
     public float attackTime;
     public float currentTime;
-    Animator animator;
+    public Animator animator;
+     float playerDistance;
+    float angle;
    void start()
     {
-        animator = GetComponent<Animator>();
+       // animator = this.GetComponent<Animator>();
     }
     IEnumerator Start()
     {
@@ -28,20 +30,21 @@ public class GameManager : MonoBehaviour
             switch (currentState)
             {
                 case STATE.LOOKFOR:
-                    animator.SetBool("isIdle", true);
+                    
                     LookFor();
-
+                    animator.SetTrigger("isIdle");
                     break;
                 case STATE.GOTO:
-                    animator.SetBool("isRunning", true);
+                    animator.SetTrigger("isRunning");
+                 
                     Goto();
                     break;
                 case STATE.ATTACK:
-                    animator.SetBool("isShooting", true);
+                    animator.SetTrigger("isShooting");
                     Attack();
                     break;
                 case STATE.DEAD:
-                    animator.SetBool("isSleeping",true);
+                    animator.SetTrigger("isSleeping");
                     Dead();
                     break;
                 default:
@@ -55,7 +58,7 @@ public class GameManager : MonoBehaviour
     public void LookFor()
     {
      
-        if (Vector3.Distance(target.transform.position, this.transform.position) < gotoDistance)
+        if (playerDistance > attackDistance && playerDistance < gotoDistance)
         {
             currentState = STATE.GOTO;
         }
@@ -63,9 +66,13 @@ public class GameManager : MonoBehaviour
     }
     public void Goto()
     {
-        if (Vector3.Distance(target.transform.position, this.transform.position) > attackDistance)
+        if (playerDistance > attackDistance && playerDistance < gotoDistance )
         {
             transform.position = Vector3.MoveTowards(transform.position, target.transform.position, enemySpeed * Time.deltaTime);
+        }
+        else if (playerDistance > gotoDistance)
+        {
+            currentState = STATE.LOOKFOR;
         }
         else
         {
@@ -77,15 +84,25 @@ public class GameManager : MonoBehaviour
     {
         
         
-        if (Vector3.Distance(target.transform.position, this.transform.position) > attackDistance)
+        if (playerDistance < attackDistance)
+                
         {
             currentState = STATE.ATTACK;
+        }
+       else
+        {
+            currentState = STATE.GOTO;
         }
         print("This is AttackState");
     }
     public void Dead()
     {
         print("Game Over!!");
+    }
+    public float PlayerDistance()
+    {
+        playerDistance = Vector3.Distance(target.transform.position, this.transform.position);
+            return playerDistance;
     }
 }
 
